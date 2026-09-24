@@ -14,12 +14,16 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from "../ui/input-otp";
 import { Field, FieldDescription, FieldError, FieldLabel } from "../ui/field";
 import { useEffect, useState } from "react";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
-import { useVerifyAccount } from "@/hooks";
+import { useVerifyAccount, useVerifyDoctorAccount } from "@/hooks";
 import { toast } from "sonner";
 
 const RESEND_COOLDOWN = 120;
 
-export default function VerifyAccountForm() {
+export default function VerifyAccountForm({
+  mode = "patient",
+}: {
+  mode: "doctor" | "patient";
+}) {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -27,7 +31,10 @@ export default function VerifyAccountForm() {
   const [isInvalid, setIsInvalid] = useState(false);
   const [resendTimer, setResendTimer] = useState(RESEND_COOLDOWN);
 
-  const { mutate: verify, isPending: verifyPending } = useVerifyAccount();
+  const { mutate: verifyPatient } = useVerifyAccount();
+  const { mutate: verifyDoctor } = useVerifyDoctorAccount();
+
+  const verify = mode === "doctor" ? verifyDoctor : verifyPatient;
 
   const email = searchParams.get("email") || "";
 
@@ -66,6 +73,15 @@ export default function VerifyAccountForm() {
           toast.error("Server Failure", {
             description: "Something went wrong. Please try again",
           });
+        }
+
+        if (mode === "doctor") {
+          toast.success("Verification Successful", {
+            description:
+              "An admin will approve your account. This may take time. Please check your email in few days",
+          });
+          router.push("/");
+          return;
         }
 
         toast.success("Verification Successful", {

@@ -29,6 +29,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
+  doctorApplicationSchema,
   isAcceptedFileSize,
   isAcceptedFileType,
   MAX_ADDITIONAL_FILES,
@@ -38,6 +39,7 @@ import {
 import { formatFileSize } from "@/utils";
 import { DoctorApplicationData } from "@/types";
 import { useApplyAsDoctor } from "@/hooks";
+import { toast } from "sonner";
 
 //* Data signature
 // {
@@ -77,6 +79,10 @@ export default function DoctorApplyForm() {
       additionalFiles: [] as File[],
     },
 
+    validators: {
+      onSubmit: doctorApplicationSchema,
+    },
+
     onSubmit: async ({ value }) => {
       const doctorData: DoctorApplicationData = {
         user: {
@@ -105,7 +111,26 @@ export default function DoctorApplyForm() {
         },
         {
           onSuccess: (res) => {
-            console.log(res);
+            if (!res.success) {
+              toast.error("Server Failure", {
+                description: "Something went wrong. Please try again",
+              });
+              return;
+            }
+
+            toast.success("Application Submitted", {
+              description: "Please verify your account",
+            });
+            const params = new URLSearchParams({
+              email: doctorData.user.email,
+            });
+            router.push(`/apply/verify-account?${params.toString()}`);
+          },
+          onError: (err) => {
+            toast.error("Application failure", {
+              description:
+                err.message || "Something went wrong. Please try again",
+            });
           },
         },
       );
@@ -478,15 +503,6 @@ export default function DoctorApplyForm() {
                       onChange={(e) => {
                         const selected = e.target.files?.[0] ?? null;
 
-                        if (
-                          selected &&
-                          (!isAcceptedFileSize(selected.size) ||
-                            !isAcceptedFileType(selected.type))
-                        ) {
-                          field.handleBlur();
-                          return;
-                        }
-
                         field.handleChange(selected);
                         e.target.value = "";
                       }}
@@ -530,7 +546,10 @@ export default function DoctorApplyForm() {
               return (
                 <Field data-invalid={isInvalid}>
                   <FieldLabel htmlFor="additional-file-field">
-                    Resume
+                    Additional Files{" "}
+                    <span className="font-normal text-muted-foreground">
+                      (optional)
+                    </span>
                   </FieldLabel>
                   <div className="flex flex-wrap items-center gap-3">
                     <Button variant="outline">
@@ -551,19 +570,8 @@ export default function DoctorApplyForm() {
                           return;
                         }
 
-                        const invalid = incoming.some(
-                          (file) =>
-                            !isAcceptedFileSize(file.size) ||
-                            !isAcceptedFileType(file.type),
-                        );
-
-                        if (invalid) {
-                          field.handleBlur();
-                          e.target.value = "";
-                          return;
-                        }
-
                         field.handleChange([...files, ...incoming]);
+                        e.target.value = "";
                       }}
                     />
                     {files.length > 0 && (
