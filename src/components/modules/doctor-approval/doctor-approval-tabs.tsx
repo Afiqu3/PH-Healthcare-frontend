@@ -2,12 +2,12 @@
 
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import useDebounce from "@/hooks/debounce.hook";
 import { DoctorParams, DoctorVerificationStatus } from "@/types";
 import { ChangeEvent, Suspense, useState } from "react";
 import DoctorApprovalTable from "./doctor-approval-table";
 import DoctorApprovalTableLoading from "./doctor-approval-table-loading";
 import DoctorReviewSheet from "./doctor-review-sheet";
+import useDebounce from "@/hooks/debounce.hook";
 
 const verificationStatus: ["ALL" | DoctorVerificationStatus, string][] = [
     ["APPROVED", "Approved"],
