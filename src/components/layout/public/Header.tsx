@@ -11,6 +11,7 @@ import { toast } from "sonner";
 export default function Header() {
   const routes = [
     { name: "Home", url: "/" },
+    { name: "Doctors", url: "/doctors" },
     { name: "About us", url: "/about-us" },
   ];
 
@@ -18,7 +19,7 @@ export default function Header() {
     SUPER_ADMIN: "/admin",
     ADMIN: "/admin",
     DOCTOR: "/doctor",
-    PATIENT: "/patient",
+    PATIENT: "/dashboard",
   };
 
   const { data, isLoading } = useGetMe();
